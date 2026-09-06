@@ -271,7 +271,7 @@ function CapsuleScreen({ entries }) {
   );
 }
 
-function SettingsScreen({ settings, onChangeSettings, onReset }) {
+function SettingsScreen({ settings, onChangeSettings, onReset, session, onLogout }) {
   return (
     <>
       <TopLabel eyebrow="การแจ้งเตือน" title="ตั้งค่าการเตือนเบา ๆ" />
@@ -308,7 +308,13 @@ function SettingsScreen({ settings, onChangeSettings, onReset }) {
       <div style={{ padding: "10px 22px", fontSize: 12, color: "#9A927B", lineHeight: 1.6 }}>
         หมายเหตุ: preview นี้ยังไม่ส่ง push notification จริง — ค่าที่ตั้งไว้ถูกบันทึกไว้เพื่อออกแบบ flow เท่านั้น
       </div>
-      <div style={{ padding: "18px 22px", marginTop: "auto" }}>
+      <div style={{ padding: "18px 22px 0", fontSize: 12, color: "#7A7360" }}>
+        เข้าสู่ระบบด้วย {session?.user?.email || "บัญชี Google"}
+      </div>
+      <div style={{ padding: "10px 22px", marginTop: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+        <button onClick={onLogout} style={{ width: "100%", padding: "10px 0", borderRadius: 10, border: "1px solid #DAD5C6", background: "transparent", color: "#57503F", fontSize: 13 }}>
+          ออกจากระบบ
+        </button>
         <button onClick={onReset} style={{ width: "100%", padding: "10px 0", borderRadius: 10, border: "1px solid #B5473F", background: "transparent", color: "#B5473F", fontSize: 13 }}>
           ล้างข้อมูลทดสอบทั้งหมด
         </button>
@@ -401,6 +407,10 @@ export default function App() {
     await saveSettings({ reminderEnabled: false, reminderTime: "20:00" });
   }
 
+  async function handleLogout() {
+    await supabase.auth.signOut();
+  }
+
   const streak = useMemo(() => (entries ? computeStreak(entries) : 0), [entries]);
 
   const tabs = [
@@ -427,7 +437,7 @@ export default function App() {
               {tab === "today" && <TodayScreen entries={entries} onSave={handleAddEntry} streak={streak} />}
               {tab === "growth" && <GrowthScreen entries={entries} />}
               {tab === "capsule" && <CapsuleScreen entries={entries} />}
-              {tab === "settings" && <SettingsScreen settings={settings} onChangeSettings={saveSettings} onReset={handleReset} />}
+              {tab === "settings" && <SettingsScreen settings={settings} onChangeSettings={saveSettings} onReset={handleReset} session={session} onLogout={handleLogout} />}
             </>
           )}
         </div>
